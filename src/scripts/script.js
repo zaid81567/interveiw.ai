@@ -1,4 +1,4 @@
-const apiKey = "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"; // Replace 'YOUR_API_KEY' with your actual API key
+const apiKey = "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"; // Replace 'YOUR_API_KEY' with your actual API key
 const apiUrl = "https://api.openai.com/v1/chat/completions";
 
 const container = document.getElementById("container");
