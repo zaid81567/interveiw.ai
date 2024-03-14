@@ -1,34 +1,56 @@
-const apiKey = "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"; // Replace 'YOUR_API_KEY' with your actual API key
+const apiKey = "YOUR_API_KEY"; // Replace 'YOUR_API_KEY' with your actual API key
 const apiUrl = "https://api.openai.com/v1/chat/completions";
 
 // const container = document.getElementById("container");
 const root = document.getElementById("root");
 const get_question_btn_el = document.getElementById("get-question");
-const question_el = document.getElementById("question");
-const answer_el = document.getElementById("answer");
+// const question_el = document.getElementById("question");
+// const answer_el = document.getElementById("answer");
 const submit_btn_el = document.getElementById("submit-btn");
 
 const rating_el = document.getElementById("rating");
 const feedback_el = document.getElementById("feedback");
 
-submit_btn_el.addEventListener("click", () => {
-  console.log("submitting answer");
-  reviewAnswer();
-});
+// FUNCTIONS
+//first func to run.
+async function startInterview() {
+  const start_container = root.querySelector("div");
+  start_container.textContent = "";
+  // root.removeChild(root.querySelector('div'));
+  addLoading(start_container);
 
-get_question_btn_el.addEventListener("click", () => {
-  console.log("starting the interview! line 10");
-  getQuestions();
-});
+  let question = await getQuestions();
+  //after getting the response, removing the start-container
+  root.textContent = "";
 
-//show feedback recieved through api
+  //appending question and answer container
+  root.appendChild(getQuestionComponent(question));
+  root.appendChild(getAnswerComponent());
+}
+
+function addLoading(start_container) {
+  console.log("inside loading ..");
+
+  const h2_el = document.createElement("h2");
+  h2_el.innerText = "Preparing the questions";
+
+  const loading_div = document.createElement("div");
+  loading_div.classList.add("spinner");
+
+  start_container.appendChild(h2_el);
+  start_container.appendChild(loading_div);
+}
+
 function showFeedback(data) {
-  rating_el.innerText = data.rating + "/10";
-  feedback_el.innerText = data.feedback;
+  root.appendChild(getFeedbackComponent(data));
 }
 
 //review answer
 async function reviewAnswer() {
+  const question_el = document.getElementById("question");
+  const answer_el = document.getElementById("answer");
+
+  console.log(answer_el.value);
   console.log("entered reviewAnswer");
   //get user answer
   const answer = answer_el.value;
@@ -52,10 +74,6 @@ async function reviewAnswer() {
   console.log("after getting rating");
 }
 
-function printQuestion(question) {
-  question_el.innerText = question;
-}
-
 //getQuestions method -> this will fetch questions from getResponse()
 async function getQuestions() {
   //####[update] - future update to get more
@@ -64,7 +82,7 @@ async function getQuestions() {
   const prompt = "Generate 1 interview question for java core. ";
   let question = await getResponse(instruction, prompt);
   // console.log(question);
-  printQuestion(question);
+  return question;
 }
 
 //getQuestions method -> this will fetch questions from getResponse()
@@ -111,8 +129,7 @@ async function getResponse(instruction, prompt) {
 
 //ui_component
 
-
-  /* <div class="items question" id="question-container">
+/* <div class="items question" id="question-container">
   <h2>Interview Question</h2>
   <p id="question">
     Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde neque dolore
@@ -121,8 +138,7 @@ async function getResponse(instruction, prompt) {
   <button id="get-question">Get Question</button>
 </div>; */
 
-
-function getQuestionComponent() {
+function getQuestionComponent(question) {
   const question_container = document.createElement("div");
   question_container.classList.add("items", "question");
   question_container.id = "question-container";
@@ -132,6 +148,7 @@ function getQuestionComponent() {
 
   const question_el = document.createElement("p");
   question_el.id = "question";
+  question_el.innerText = question;
 
   const button_el = document.createElement("button");
   button_el.id = "get-question";
@@ -145,17 +162,16 @@ function getQuestionComponent() {
   return question_container;
 }
 
-
-  // <!-- answer -->
-  //     <div class="items answer">
-  //       <h2>Answer</h2>
-  //       <textarea
-  //         rows="8"
-  //         placeholder="Write your answer here..."
-  //         id="answer"
-  //       ></textarea>
-  //       <button id="submit-btn">Submit</button>
-  //     </div>
+// <!-- answer -->
+//     <div class="items answer">
+//       <h2>Answer</h2>
+//       <textarea
+//         rows="8"
+//         placeholder="Write your answer here..."
+//         id="answer"
+//       ></textarea>
+//       <button id="submit-btn">Submit</button>
+//     </div>
 function getAnswerComponent() {
   const answer_container = document.createElement("div");
   answer_container.classList.add("items", "answer");
@@ -164,14 +180,17 @@ function getAnswerComponent() {
   h_el.innerText = "Answer";
 
   const textarea_el = document.createElement("textarea");
-  textarea_el.setAttribute("rows","8");
+  textarea_el.setAttribute("rows", "8");
   textarea_el.setAttribute("placeholder", "Write your answer here...");
   textarea_el.id = "answer";
-
 
   const button_el = document.createElement("button");
   button_el.id = "submit-btn";
   button_el.innerText = "Submit";
+  button_el.addEventListener("click", () => {
+    console.log("submitting answer");
+    reviewAnswer();
+  });
 
   //append to question cont.
   answer_container.appendChild(h_el);
@@ -180,8 +199,6 @@ function getAnswerComponent() {
 
   return answer_container;
 }
-
-
 
 // <!-- feedback -->
 //       <div class="items feedback" id="feedback-container">
@@ -196,7 +213,9 @@ function getAnswerComponent() {
 //           cupiditate, iste quod. Eligendi, quasi.
 //         </p>
 //       </div>
-function getFeedbackComponent() {
+function getFeedbackComponent(data) {
+  // rating_el.innerText = data.rating + "/10";
+  // feedback_el.innerText = data.feedback;
   const feedback_container = document.createElement("div");
   feedback_container.classList.add("items", "feedback");
   feedback_container.id = "feedback-container";
@@ -210,17 +229,18 @@ function getFeedbackComponent() {
   const h_rating_el = document.createElement("h2");
   h_rating_el.classList.add("rating");
   h_rating_el.id = "rating";
-  
+  h_rating_el.innerText = data.rating + "/10";
+
   //appending to rating container
   rating_container.appendChild(h_title_el);
   rating_container.appendChild(h_rating_el);
 
   const p_feedback = document.createElement("p");
   p_feedback.id = "feedback";
+  p_feedback.innerText = data.feedback;
 
   feedback_container.appendChild(rating_container);
   feedback_container.appendChild(p_feedback);
 
   return feedback_container;
 }
-

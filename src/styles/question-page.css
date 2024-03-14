@@ -1,3 +1,8 @@
+/* imports */
+@import url("../styles/start-page.css");
+@import url("../styles/spinner.css");
+
+/* regular */
 * {
   box-sizing: border-box;
   padding: 0;
